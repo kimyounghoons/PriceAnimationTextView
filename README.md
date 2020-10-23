@@ -39,6 +39,14 @@ java:
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 ```
+### default values
+1.textSize : 25px
+2.textStyle : bold
+3.textColor : #0000000 
+4.endText : 원
+5.hintColor : #cccccc
+6.hintText : 금액 입력
+
 
 ## Java
 java:
