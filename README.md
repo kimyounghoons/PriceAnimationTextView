@@ -6,7 +6,7 @@
 Add dependencies in build.gradle:
 ```
  dependencies {
-       implementation 'com.github.kimyounghoons:PriceAnimationTextView:0.1.0'
+       implementation 'com.github.kimyounghoons:PriceAnimationTextView:1.0.1'
     }
 ```
 Or Maven:
