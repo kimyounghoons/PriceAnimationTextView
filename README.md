@@ -1,5 +1,7 @@
 # PriceAnimationTextView
 
+[![](https://jitpack.io/v/kimyounghoons/PriceAnimationTextView.svg)](https://jitpack.io/#kimyounghoons/PriceAnimationTextView)
+
 #demo
 ###![image](/screenshot/name.gif)
 # usage
