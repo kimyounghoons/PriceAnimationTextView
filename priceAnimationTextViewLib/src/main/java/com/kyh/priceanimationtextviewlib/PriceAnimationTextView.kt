@@ -19,6 +19,7 @@ import android.view.animation.TranslateAnimation
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 
 class PriceAnimationTextView : LinearLayout {
     var textSize: Float = DEFAULT_TEXT_SIZE.toFloat()
@@ -26,8 +27,8 @@ class PriceAnimationTextView : LinearLayout {
     private val textViewArrayList = arrayListOf<AppCompatTextView>()
     private var textStyle: Int = Typeface.BOLD
     private var hintText: CharSequence = DEFAULT_HINT_TEXT
-    private var hintColor: Int = ContextCompat.getColor(context,R.color.gray_color)
-    private var textColor: Int = ContextCompat.getColor(context,R.color.black_color)
+    private var hintColor: Int = ContextCompat.getColor(context, R.color.gray_color)
+    private var textColor: Int = ContextCompat.getColor(context, R.color.black_color)
     private var endText: CharSequence = DEFAULT_END_TEXT
     private var maxLength = DEFAULT_MAX_LENGTH
 
@@ -51,7 +52,7 @@ class PriceAnimationTextView : LinearLayout {
         if (attrs != null) {
             context.obtainStyledAttributes(attrs, R.styleable.PriceAnimationTextView).apply {
                 endText =
-                    getText(R.styleable.PriceAnimationTextView_hintText) ?: DEFAULT_END_TEXT
+                    getText(R.styleable.PriceAnimationTextView_endText) ?: DEFAULT_END_TEXT
                 hintText =
                     getText(R.styleable.PriceAnimationTextView_hintText) ?: DEFAULT_HINT_TEXT
                 textSize = getDimensionPixelSize(
@@ -82,8 +83,8 @@ class PriceAnimationTextView : LinearLayout {
                 recycle()
             }
         }
-
-        layoutDirection = LAYOUT_DIRECTION_RTL
+        orientation = HORIZONTAL
+        ViewCompat.setLayoutDirection(this, ViewCompat.LAYOUT_DIRECTION_RTL)
         addHintTextView()
     }
 
