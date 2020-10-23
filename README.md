@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/kimyounghoons/PriceAnimationTextView.svg)](https://jitpack.io/#kimyounghoons/PriceAnimationTextView)
 
-![image](/screenshot/animation.gif){:height="700px" width="400px"}
+![](https://github.com/kimyounghoons/PriceAnimationTextView/blob/main/screenshot/animation.gif){ width=50% }
 # usage
 Add dependencies in build.gradle:
 ```
@@ -15,7 +15,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.kimyounghoons</groupId>
   <artifactId>PriceAnimationTextView</artifactId>
-  <version>0.1.0</version>
+  <version>1.0.1</version>
   <type>pom</type>
 </dependency>
 ```
