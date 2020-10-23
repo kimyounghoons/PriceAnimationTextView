@@ -2,8 +2,7 @@
 
 [![](https://jitpack.io/v/kimyounghoons/PriceAnimationTextView.svg)](https://jitpack.io/#kimyounghoons/PriceAnimationTextView)
 
-#demo
-###![image](/screenshot/animation.gif)
+![image](/screenshot/animation.gif)
 # usage
 Add dependencies in build.gradle:
 ```
