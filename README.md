@@ -20,7 +20,6 @@ Or Maven:
 </dependency>
 ```
 ## XML Layout
-java:
 ```
 <com.kyh.priceanimationtextviewlib.PriceAnimationTextView
             android:id="@+id/priceAnimationTextView"
@@ -40,16 +39,16 @@ java:
             app:layout_constraintTop_toTopOf="parent" />
 ```
 ### default values
-1.textSize : 25px
-2.textStyle : bold
-3.textColor : #0000000 
-4.endText : 원
-5.hintColor : #cccccc
-6.hintText : 금액 입력
-
+```
+textSize : 25px  
+textStyle : bold  
+textColor : #0000000  
+endText : 원  
+hintColor : #cccccc  
+hintText : 금액 입력
+```
 
 ## Java
-java:
 ```
 priceAnimationTextView.addText("1")
 priceAnimationTextView.backButton()
