@@ -49,7 +49,7 @@ hintColor : #cccccc
 hintText : 금액 입력
 ```
 
-## Java
+## Kotlin
 ```
 priceAnimationTextView.addText("1")
 priceAnimationTextView.backButton()
