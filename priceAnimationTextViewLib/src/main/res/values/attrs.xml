@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PriceAnimationTextView">
+        <attr name="endText" format="string" />
+        <attr name="hintText" format="string" />
+        <attr name="android:textSize" />
+        <attr name="android:textColor" format="reference|color" />
+        <attr name="hintTextColor" format="reference|color" />
+        <attr name="hintColor" format="reference|color" />
+        <attr name="android:gravity" />
+        <attr name="android:textStyle" />
+        <attr name="android:maxLength"/>
+    </declare-styleable>
+
+</resources>

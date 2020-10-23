@@ -1,0 +1,3 @@
+include ':priceAnimationTextViewLib'
+include ':app'
+rootProject.name = "PriceAnimationTextView"
