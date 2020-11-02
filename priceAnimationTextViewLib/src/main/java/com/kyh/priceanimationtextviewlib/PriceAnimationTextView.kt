@@ -5,10 +5,8 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Typeface
-import android.os.Build
-import android.os.Handler
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
@@ -17,9 +15,12 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.AnimationSet
 import android.view.animation.TranslateAnimation
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.children
+
 
 class PriceAnimationTextView : LinearLayout {
     var textSize: Float = DEFAULT_TEXT_SIZE.toFloat()
@@ -48,7 +49,7 @@ class PriceAnimationTextView : LinearLayout {
         init(attrs)
     }
 
-    fun init(attrs: AttributeSet? = null) {
+    private fun init(attrs: AttributeSet? = null) {
         if (attrs != null) {
             context.obtainStyledAttributes(attrs, R.styleable.PriceAnimationTextView).apply {
                 endText =
@@ -88,6 +89,33 @@ class PriceAnimationTextView : LinearLayout {
         addHintTextView()
     }
 
+    override fun onSaveInstanceState(): Parcelable? {
+        return Bundle().apply {
+            putParcelable(KEY_ON_SAVE_INSTANCES_TATE, super.onSaveInstanceState())
+            putStringArrayList(KEY_SAVE_DATA, ArrayList(textViewArrayList.map {
+                it.text.toString()
+            }))
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is Bundle) {
+            super.onRestoreInstanceState(state.get(KEY_ON_SAVE_INSTANCES_TATE) as Parcelable)
+            state.getStringArrayList(KEY_SAVE_DATA)?.let {
+                if (it.isNotEmpty()) {
+                    removeAllViews()
+                    it.filter { originContent ->
+                        originContent != "," && originContent != endText
+                    }.forEach { filteredContent ->
+                        addText(filteredContent, false)
+                    }
+                }
+            }
+        } else {
+            super.onRestoreInstanceState(state)
+        }
+    }
+
     fun getText(): String {
         val strBuffer = StringBuffer()
         textViewArrayList.filterIsInstance<InputTextView>().forEach {
@@ -96,7 +124,29 @@ class PriceAnimationTextView : LinearLayout {
         return strBuffer.toString()
     }
 
-    fun addText(text: CharSequence) {
+    fun getAllText(): String {
+        if (childCount == 0) {
+            return ""
+        }
+
+        if (getChildAt(0) is HintTextView) {
+            return ""
+        }
+
+        val strBuffer = StringBuffer()
+        children.toMutableList().asReversed().forEach {
+            if (it is TextView) {
+                strBuffer.append(it.text)
+            }
+        }
+        return strBuffer.toString()
+    }
+
+    fun addText(text: CharSequence, needAnimation: Boolean = true) {
+        if (TextUtils.isDigitsOnly(text).not()) {
+            return
+        }
+
         if (text == "0") {
             return
         }
@@ -114,13 +164,13 @@ class PriceAnimationTextView : LinearLayout {
         }
 
         if (textViewArrayList.size == 0) {
-            createWonTextView().let {
+            createEndTextView().let {
                 textViewArrayList.add(it)
                 addView(it, 0)
             }
         }
 
-        createInputTextView()
+        createInputTextView(needAnimation)
             .apply {
                 setText(text)
             }.let {
@@ -128,31 +178,33 @@ class PriceAnimationTextView : LinearLayout {
                 addView(it, 1)
             }
 
-        refreshComma()
+        refreshComma(needAnimation)
     }
 
-    fun backButton() {
+    fun backButton(needAnimation: Boolean = true) {
         if (textViewArrayList.isEmpty() || textViewArrayList.first() is HintTextView) {
             return
         }
 
         val lastTextView = textViewArrayList.last()
-        val translateAnimate = TranslateAnimation(0f, 0f, 0f, lastTextView.height.toFloat() / 3)
-            .apply {
-                duration = 200
+        if (needAnimation) {
+            val translateAnimate = TranslateAnimation(0f, 0f, 0f, lastTextView.height.toFloat() / 3)
+                .apply {
+                    duration = 200
+                }
+
+            val alphaAnimate = AlphaAnimation(1f, 0f)
+                .apply {
+                    duration = 200
+                }
+
+            val animationSet = AnimationSet(false).apply {
+                addAnimation(translateAnimate)
+                addAnimation(alphaAnimate)
             }
 
-        val alphaAnimate = AlphaAnimation(1f, 0f)
-            .apply {
-                duration = 200
-            }
-
-        val animationSet = AnimationSet(false).apply {
-            addAnimation(translateAnimate)
-            addAnimation(alphaAnimate)
+            lastTextView.startAnimation(animationSet)
         }
-
-        lastTextView.startAnimation(animationSet)
 
         removeView(lastTextView)
         textViewArrayList.remove(lastTextView)
@@ -162,24 +214,23 @@ class PriceAnimationTextView : LinearLayout {
             removeView(wonTextView)
             textViewArrayList.remove(wonTextView)
         }
-        refreshComma()
-
-        addHintTextView()
+        refreshComma(needAnimation)
+        addHintTextView(needAnimation)
     }
 
-    private fun addHintTextView() {
+    private fun addHintTextView(needAnimation: Boolean = true) {
         if (textViewArrayList.isEmpty()) {
-            createHintTextView().let {
+            createHintTextView(needAnimation).let {
                 textViewArrayList.add(it)
                 addView(it, 0)
             }
         }
     }
 
-    private fun refreshComma() {
+    private fun refreshComma(needAnimation: Boolean) {
         if (textViewArrayList.size > 3) {
             removeCommas()
-            addCommas()
+            addCommas(needAnimation)
         }
     }
 
@@ -194,7 +245,7 @@ class PriceAnimationTextView : LinearLayout {
         }
     }
 
-    private fun addCommas() {
+    private fun addCommas(needAnimation: Boolean) {
         val inputTextViewList = textViewArrayList.filterIsInstance<InputTextView>()
         val commaCount = (inputTextViewList.size - 1) / 3
         val inputCommaPositionList = arrayListOf<Int>()
@@ -205,7 +256,7 @@ class PriceAnimationTextView : LinearLayout {
             }
 
             for (position in inputCommaPositionList) {
-                createCommaTextView().let {
+                createCommaTextView(needAnimation).let {
                     addView(it, position)
                     textViewArrayList.add(position, it)
                 }
@@ -213,14 +264,15 @@ class PriceAnimationTextView : LinearLayout {
         }
     }
 
-    private fun createCommaTextView(): AppCompatTextView = CommaTextView(context).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
-        gravity = Gravity.CENTER
-        setTextColor(textColor)
-        setTypeface(null, textStyle)
-    }
+    private fun createCommaTextView(needAnimation: Boolean): AppCompatTextView =
+        CommaTextView(context, needAnimation).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+            gravity = Gravity.CENTER
+            setTextColor(textColor)
+            setTypeface(null, textStyle)
+        }
 
-    private fun createWonTextView(): AppCompatTextView = WonTextView(context).apply {
+    private fun createEndTextView(): AppCompatTextView = EndTextView(context).apply {
         setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
         gravity = Gravity.CENTER
         setTextColor(textColor)
@@ -228,22 +280,24 @@ class PriceAnimationTextView : LinearLayout {
         text = endText
     }
 
-    private fun createInputTextView(): AppCompatTextView = InputTextView(context).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
-        gravity = Gravity.CENTER
-        setTextColor(textColor)
-        setTypeface(null, textStyle)
-    }
+    private fun createInputTextView(needAnimation: Boolean): AppCompatTextView =
+        InputTextView(context, needAnimation).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+            gravity = Gravity.CENTER
+            setTextColor(textColor)
+            setTypeface(null, textStyle)
+        }
 
-    private fun createHintTextView(): AppCompatTextView = HintTextView(context).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
-        gravity = Gravity.CENTER
-        text = hintText
-        setTextColor(hintColor)
-        setTypeface(null, textStyle)
-    }
+    private fun createHintTextView(needAnimation: Boolean): AppCompatTextView =
+        HintTextView(context, needAnimation).apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+            gravity = Gravity.CENTER
+            text = hintText
+            setTextColor(hintColor)
+            setTypeface(null, textStyle)
+        }
 
-    class WonTextView : AppCompatTextView {
+    private inner class EndTextView : AppCompatTextView {
         constructor(context: Context) : super(context) {
             init()
         }
@@ -260,14 +314,17 @@ class PriceAnimationTextView : LinearLayout {
             init()
         }
 
-        fun init() {
+        private fun init() {
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
         }
 
     }
 
-    class HintTextView : AppCompatTextView {
-        constructor(context: Context) : super(context) {
+    private inner class HintTextView : AppCompatTextView {
+        var isSavedData = false
+
+        constructor(context: Context, isSavedData: Boolean) : super(context) {
+            this.isSavedData = isSavedData
             init()
         }
 
@@ -289,15 +346,20 @@ class PriceAnimationTextView : LinearLayout {
 
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
-            alpha = 0f
-            Handler().postDelayed({
-                animate().alpha(1f)
-            }, 100)
+            if (isSavedData.not()) {
+                alpha = 0f
+                Handler().postDelayed({
+                    animate().alpha(1f)
+                }, 100)
+            }
         }
     }
 
-    class CommaTextView : AppCompatTextView {
-        constructor(context: Context) : super(context) {
+    private inner class CommaTextView : AppCompatTextView {
+        var needAnimation = true
+
+        constructor(context: Context, needAnimation: Boolean) : super(context) {
+            this.needAnimation = needAnimation
             init()
         }
 
@@ -313,23 +375,27 @@ class PriceAnimationTextView : LinearLayout {
             init()
         }
 
-        fun init() {
+        private fun init() {
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
             text = ","
         }
 
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
-            alpha = 0f
-            Handler().postDelayed({
-                animate().alpha(1f)
-            }, 100)
+            if (needAnimation) {
+                alpha = 0f
+                Handler().postDelayed({
+                    animate().alpha(1f)
+                }, 100)
+            }
         }
     }
 
-    class InputTextView : AppCompatTextView {
+    private inner class InputTextView : AppCompatTextView {
+        var needAnimation = false
 
-        constructor(context: Context) : super(context) {
+        constructor(context: Context, needAnimation: Boolean) : super(context) {
+            this.needAnimation = needAnimation
             init()
         }
 
@@ -345,7 +411,7 @@ class PriceAnimationTextView : LinearLayout {
             init()
         }
 
-        fun init() {
+        private fun init() {
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
         }
 
@@ -356,13 +422,15 @@ class PriceAnimationTextView : LinearLayout {
 
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
-            alpha = 0f
-            Handler().postDelayed({
-                alpha = 1f
-                val animate = TranslateAnimation(0f, 0f, -height.toFloat(), 0f)
-                animate.duration = 400
-                startAnimation(animate)
-            }, 50)
+            if (needAnimation) {
+                alpha = 0f
+                Handler().postDelayed({
+                    alpha = 1f
+                    val animate = TranslateAnimation(0f, 0f, -height.toFloat(), 0f)
+                    animate.duration = 400
+                    startAnimation(animate)
+                }, 50)
+            }
         }
 
     }
@@ -413,6 +481,8 @@ class PriceAnimationTextView : LinearLayout {
         private const val DEFAULT_MAX_LENGTH = 7
         private const val DEFAULT_END_TEXT = "원"
         private const val DEFAULT_HINT_TEXT = "금액 입력"
+        private const val KEY_ON_SAVE_INSTANCES_TATE = "KEY_ON_SAVE_INSTANCES_TATE"
+        private const val KEY_SAVE_DATA = "KEY_SAVE_DATA"
     }
 
 }
