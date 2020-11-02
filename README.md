@@ -24,21 +24,15 @@ Or Maven:
 ## XML Layout
 ```
 <com.kyh.priceanimationtextviewlib.PriceAnimationTextView
-            android:id="@+id/priceAnimationTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:maxLength="10"
-            android:orientation="horizontal"
+            app:maxPrice="2000000"
             android:textColor="#000000"
             android:textSize="15sp"
             android:textStyle="bold"
             app:endText="원"
             app:hintColor="#cccccc"
-            app:hintText="금액 입력"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:hintText="금액 입력"/>
 ```
 ### default values
 ```
@@ -48,10 +42,5 @@ textColor : #0000000
 endText : 원  
 hintColor : #cccccc  
 hintText : 금액 입력
-```
-
-## Kotlin
-```
-priceAnimationTextView.addText("1")
-priceAnimationTextView.backButton()
+maxPrice : 2000000
 ```

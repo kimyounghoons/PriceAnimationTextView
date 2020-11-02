@@ -20,6 +20,8 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class PriceAnimationTextView : LinearLayout {
@@ -31,7 +33,8 @@ class PriceAnimationTextView : LinearLayout {
     private var hintColor: Int = ContextCompat.getColor(context, R.color.gray_color)
     private var textColor: Int = ContextCompat.getColor(context, R.color.black_color)
     private var endText: CharSequence = DEFAULT_END_TEXT
-    private var maxLength = DEFAULT_MAX_LENGTH
+    private var maxPrice = DEFAULT_MAX_PRICE
+    private var priceAnimationTextViewListener: PriceAnimationTextViewListener? = null
 
     constructor(context: Context?) : super(context) {
         init()
@@ -78,8 +81,8 @@ class PriceAnimationTextView : LinearLayout {
                     R.styleable.PriceAnimationTextView_android_textStyle,
                     Typeface.BOLD
                 )
-                maxLength =
-                    getInt(R.styleable.PriceAnimationTextView_android_maxLength, DEFAULT_MAX_LENGTH)
+                maxPrice =
+                    getInt(R.styleable.PriceAnimationTextView_maxPrice, DEFAULT_MAX_PRICE)
 
                 recycle()
             }
@@ -144,21 +147,31 @@ class PriceAnimationTextView : LinearLayout {
 
     fun addText(text: CharSequence, needAnimation: Boolean = true) {
         if (TextUtils.isDigitsOnly(text).not()) {
+            priceAnimationTextViewListener?.onMessageOnlyInputDigit()
             return
         }
 
-        if (text == "0") {
+        if (hasHintText() && text == "0") {
+            priceAnimationTextViewListener?.onMessageZeroStart()
             return
         }
 
-        if (textViewArrayList.first() is HintTextView) {
-            textViewArrayList.first().let {
-                removeView(it)
-                textViewArrayList.remove(it)
+        if (hasHintText()) {
+            textViewArrayList.clear()
+            removeAllViews()
+        }
+
+        if ((getText() + text).toInt() > maxPrice) {
+            for (textView in textViewArrayList) {
+                textView.clearAnimation()
             }
-        }
-
-        if (textViewArrayList.filterIsInstance<InputTextView>().size >= maxLength) {
+            textViewArrayList.clear()
+            removeAllViews()
+            maxPrice.toString().toList().map {
+                addText(it.toString(), false)
+            }
+            priceAnimationTextViewListener?.onMessageMaxPrice(maxPrice)
+            priceAnimationTextViewListener?.onMessageMaxPrice(getAllText())
             vibrateView()
             return
         }
@@ -296,6 +309,12 @@ class PriceAnimationTextView : LinearLayout {
             setTextColor(hintColor)
             setTypeface(null, textStyle)
         }
+
+    private fun hasHintText() = textViewArrayList.filterIsInstance<HintTextView>().isNotEmpty()
+
+    fun setPriceAnimationTextViewListener(priceAnimationTextViewListener: PriceAnimationTextViewListener) {
+        this.priceAnimationTextViewListener = priceAnimationTextViewListener
+    }
 
     private inner class EndTextView : AppCompatTextView {
         constructor(context: Context) : super(context) {
@@ -478,7 +497,7 @@ class PriceAnimationTextView : LinearLayout {
 
     companion object {
         private const val DEFAULT_TEXT_SIZE = 25
-        private const val DEFAULT_MAX_LENGTH = 7
+        private const val DEFAULT_MAX_PRICE = 2000000
         private const val DEFAULT_END_TEXT = "원"
         private const val DEFAULT_HINT_TEXT = "금액 입력"
         private const val KEY_ON_SAVE_INSTANCES_TATE = "KEY_ON_SAVE_INSTANCES_TATE"

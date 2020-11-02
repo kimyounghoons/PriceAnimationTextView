@@ -10,7 +10,7 @@
         <attr name="hintColor" format="reference|color" />
         <attr name="android:gravity" />
         <attr name="android:textStyle" />
-        <attr name="android:maxLength"/>
+        <attr name="maxPrice" format="integer"/>
     </declare-styleable>
 
 </resources>
