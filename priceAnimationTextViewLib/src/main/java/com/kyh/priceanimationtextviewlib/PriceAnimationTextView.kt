@@ -20,8 +20,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
-import java.util.*
-import kotlin.collections.ArrayList
 
 
 class PriceAnimationTextView : LinearLayout {
@@ -201,10 +199,11 @@ class PriceAnimationTextView : LinearLayout {
 
         val lastTextView = textViewArrayList.last()
         if (needAnimation) {
-            val translateAnimate = TranslateAnimation(0f, 0f, 0f, lastTextView.height.toFloat() / 3)
-                .apply {
-                    duration = 200
-                }
+            val translateAnimate =
+                TranslateAnimation(0f, 0f, 0f, -(lastTextView.height.toFloat() / 3))
+                    .apply {
+                        duration = 200
+                    }
 
             val alphaAnimate = AlphaAnimation(1f, 0f)
                 .apply {
@@ -369,7 +368,7 @@ class PriceAnimationTextView : LinearLayout {
                 alpha = 0f
                 Handler().postDelayed({
                     animate().alpha(1f)
-                }, 100)
+                }, 50)
             }
         }
     }
@@ -405,7 +404,7 @@ class PriceAnimationTextView : LinearLayout {
                 alpha = 0f
                 Handler().postDelayed({
                     animate().alpha(1f)
-                }, 100)
+                }, 50)
             }
         }
     }
@@ -442,12 +441,22 @@ class PriceAnimationTextView : LinearLayout {
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
             if (needAnimation) {
-                alpha = 0f
                 Handler().postDelayed({
-                    alpha = 1f
-                    val animate = TranslateAnimation(0f, 0f, -height.toFloat(), 0f)
-                    animate.duration = 400
-                    startAnimation(animate)
+                    val translateAnimate =
+                        TranslateAnimation(0f, 0f, -(height.toFloat() / 4), -5f).apply {
+                            duration = 100
+                        }
+
+                    val alphaAnimate = AlphaAnimation(0f, 1f)
+                        .apply {
+                            duration = 100
+                        }
+
+                    val animationSet = AnimationSet(false).apply {
+                        addAnimation(translateAnimate)
+                        addAnimation(alphaAnimate)
+                    }
+                    startAnimation(animationSet)
                 }, 50)
             }
         }
