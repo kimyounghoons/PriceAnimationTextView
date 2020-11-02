@@ -264,7 +264,7 @@ class PriceAnimationTextView : LinearLayout {
 
         if (commaCount > 0) {
             for (position in 1..commaCount) {
-                inputCommaPositionList.add(((position * 4) + endText.length - 1))
+                inputCommaPositionList.add(((position * 4)))
             }
 
             for (position in inputCommaPositionList) {
