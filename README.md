@@ -4,11 +4,12 @@
 
 <img src="https://github.com/kimyounghoons/PriceAnimationTextView/blob/main/screenshot/animation.gif" width="400" height="800"/>
 
-# usage
+# usage 
+[![](https://jitpack.io/v/kimyounghoons/PriceAnimationTextView.svg)](https://jitpack.io/#kimyounghoons/PriceAnimationTextView)  
 Add dependencies in build.gradle:
 ```
  dependencies {
-       implementation 'com.github.kimyounghoons:PriceAnimationTextView:1.0.1'
+       implementation 'com.github.kimyounghoons:PriceAnimationTextView:latestVersion'
     }
 ```
 Or Maven:
@@ -16,7 +17,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.kimyounghoons</groupId>
   <artifactId>PriceAnimationTextView</artifactId>
-  <version>1.0.1</version>
+  <version>latestVersion</version>
   <type>pom</type>
 </dependency>
 ```
