@@ -8,6 +8,12 @@
         <attr name="android:textColor" format="reference|color" />
         <attr name="hintTextColor" format="reference|color" />
         <attr name="hintColor" format="reference|color" />
+        <attr name="hintTextStyle" format="integer">
+            <flag name="normal" value="0" />
+            <flag name="bold" value="1" />
+            <flag name="italic" value="2" />
+            <flag name="italicBold" value="3" />
+        </attr>
         <attr name="android:gravity" />
         <attr name="android:textStyle" />
         <attr name="maxPrice" format="integer"/>

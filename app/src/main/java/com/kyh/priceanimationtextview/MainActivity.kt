@@ -8,6 +8,7 @@ import com.kyh.priceanimationtextviewlib.PriceAnimationTextViewListener
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -55,6 +56,10 @@ class MainActivity : AppCompatActivity() {
         }
         btn6.setOnClickListener {
             Toast.makeText(this, priceAnimationTextView.getAllText(), Toast.LENGTH_SHORT).show()
+        }
+
+        btn7.setOnClickListener {
+            priceAnimationTextView.clear()
         }
     }
 }

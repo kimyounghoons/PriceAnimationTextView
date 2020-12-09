@@ -18,7 +18,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.children
 
 
@@ -27,6 +26,7 @@ class PriceAnimationTextView : LinearLayout {
 
     private val textViewArrayList = arrayListOf<AppCompatTextView>()
     private var textStyle: Int = Typeface.BOLD
+    private var hintTextStyle: Int = Typeface.BOLD
     private var hintText: CharSequence = DEFAULT_HINT_TEXT
     private var hintColor: Int = ContextCompat.getColor(context, R.color.gray_color)
     private var textColor: Int = ContextCompat.getColor(context, R.color.black_color)
@@ -79,6 +79,10 @@ class PriceAnimationTextView : LinearLayout {
                     R.styleable.PriceAnimationTextView_android_textStyle,
                     Typeface.BOLD
                 )
+                hintTextStyle = getInt(
+                    R.styleable.PriceAnimationTextView_hintTextStyle,
+                    textStyle
+                )
                 maxPrice =
                     getInt(R.styleable.PriceAnimationTextView_maxPrice, DEFAULT_MAX_PRICE)
 
@@ -86,7 +90,6 @@ class PriceAnimationTextView : LinearLayout {
             }
         }
         orientation = HORIZONTAL
-        ViewCompat.setLayoutDirection(this, ViewCompat.LAYOUT_DIRECTION_RTL)
         addHintTextView()
     }
 
@@ -117,6 +120,43 @@ class PriceAnimationTextView : LinearLayout {
         }
     }
 
+    fun setTextStyle(textStyle: TextStyle) {
+        this.textStyle = textStyle.value
+        textViewArrayList.forEach {
+            if (it !is HintTextView) {
+                it.setTypeface(null, textStyle.value)
+            }
+        }
+    }
+
+    fun setHintTextStyle(textStyle: TextStyle) {
+        this.hintTextStyle = textStyle.value
+        textViewArrayList.forEach {
+            if (it is HintTextView) {
+                it.setTypeface(null, textStyle.value)
+            }
+        }
+    }
+
+    fun setTextColor(color: Int) {
+        this.textColor = color
+        textViewArrayList.forEach {
+            if (it !is HintTextView) {
+                it.setTextColor(textColor)
+            }
+        }
+    }
+
+    fun setHintTextColor(color: Int) {
+        this.hintColor = color
+        textViewArrayList.forEach {
+            if (it is HintTextView) {
+                it.setTextColor(hintColor)
+            }
+        }
+    }
+
+
     fun getText(): String {
         val strBuffer = StringBuffer()
         textViewArrayList.filterIsInstance<InputTextView>().forEach {
@@ -135,7 +175,7 @@ class PriceAnimationTextView : LinearLayout {
         }
 
         val strBuffer = StringBuffer()
-        children.toMutableList().asReversed().forEach {
+        children.toMutableList().forEach {
             if (it is TextView) {
                 strBuffer.append(it.text)
             }
@@ -174,22 +214,30 @@ class PriceAnimationTextView : LinearLayout {
             return
         }
 
-        if (textViewArrayList.size == 0) {
-            createEndTextView().let {
-                textViewArrayList.add(it)
-                addView(it, 0)
-            }
-        }
-
         createInputTextView(needAnimation)
             .apply {
                 setText(text)
             }.let {
                 textViewArrayList.add(it)
-                addView(it, 1)
+                addView(it, textViewArrayList.size - 1)
             }
 
         refreshComma(needAnimation)
+        refreshEndText()
+    }
+
+    private fun refreshEndText() {
+        val endTexts = textViewArrayList.filterIsInstance<EndTextView>()
+        if (endTexts.isNotEmpty()) {
+            val endText = endTexts.first()
+            removeView(endText)
+            textViewArrayList.remove(endText)
+        }
+
+        createEndTextView().let {
+            textViewArrayList.add(it)
+            addView(it, textViewArrayList.size - 1)
+        }
     }
 
     fun backButton(needAnimation: Boolean = true) {
@@ -197,7 +245,9 @@ class PriceAnimationTextView : LinearLayout {
             return
         }
 
-        val lastTextView = textViewArrayList.last()
+        val lastTextView = textViewArrayList.filter {
+            it is InputTextView
+        }.last()
         if (needAnimation) {
             val translateAnimate =
                 TranslateAnimation(0f, 0f, 0f, -(lastTextView.height.toFloat() / 3))
@@ -220,14 +270,20 @@ class PriceAnimationTextView : LinearLayout {
 
         removeView(lastTextView)
         textViewArrayList.remove(lastTextView)
-
-        if (textViewArrayList.size == 1) {
-            val wonTextView = textViewArrayList.last()
-            removeView(wonTextView)
-            textViewArrayList.remove(wonTextView)
-        }
         refreshComma(needAnimation)
+        refreshEndText()
+        if (textViewArrayList.size == 1) {
+            val endTextView = textViewArrayList.first()
+            removeView(endTextView)
+            textViewArrayList.remove(endTextView)
+        }
         addHintTextView(needAnimation)
+    }
+
+    fun clear() {
+        removeAllViews()
+        textViewArrayList.clear()
+        addHintTextView()
     }
 
     private fun addHintTextView(needAnimation: Boolean = true) {
@@ -264,7 +320,7 @@ class PriceAnimationTextView : LinearLayout {
 
         if (commaCount > 0) {
             for (position in 1..commaCount) {
-                inputCommaPositionList.add(((position * 4)))
+                inputCommaPositionList.add(((textViewArrayList.size - 1) - (position * 3)))
             }
 
             for (position in inputCommaPositionList) {
@@ -278,14 +334,14 @@ class PriceAnimationTextView : LinearLayout {
 
     private fun createCommaTextView(needAnimation: Boolean): AppCompatTextView =
         CommaTextView(context, needAnimation).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, this@PriceAnimationTextView.textSize)
             gravity = Gravity.CENTER
             setTextColor(textColor)
             setTypeface(null, textStyle)
         }
 
     private fun createEndTextView(): AppCompatTextView = EndTextView(context).apply {
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, this@PriceAnimationTextView.textSize)
         gravity = Gravity.CENTER
         setTextColor(textColor)
         setTypeface(null, textStyle)
@@ -294,7 +350,7 @@ class PriceAnimationTextView : LinearLayout {
 
     private fun createInputTextView(needAnimation: Boolean): AppCompatTextView =
         InputTextView(context, needAnimation).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, this@PriceAnimationTextView.textSize)
             gravity = Gravity.CENTER
             setTextColor(textColor)
             setTypeface(null, textStyle)
@@ -302,11 +358,11 @@ class PriceAnimationTextView : LinearLayout {
 
     private fun createHintTextView(needAnimation: Boolean): AppCompatTextView =
         HintTextView(context, needAnimation).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, this@PriceAnimationTextView.textSize)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, this@PriceAnimationTextView.textSize)
             gravity = Gravity.CENTER
             text = hintText
             setTextColor(hintColor)
-            setTypeface(null, textStyle)
+            setTypeface(null, hintTextStyle)
         }
 
     private fun hasHintText() = textViewArrayList.filterIsInstance<HintTextView>().isNotEmpty()
@@ -502,6 +558,13 @@ class PriceAnimationTextView : LinearLayout {
             dp.toFloat(),
             Resources.getSystem().displayMetrics
         ) + 0.5f).toInt()
+    }
+
+    enum class TextStyle(val value: Int) {
+        NORMAL(0),
+        BOLD(1),
+        BOLD_ITALIC(2),
+        ITALIC(3),
     }
 
     companion object {
